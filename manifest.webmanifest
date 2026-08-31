@@ -1,0 +1,16 @@
+{
+  "name": "Minha Rotina",
+  "short_name": "Rotina",
+  "description": "Central de vida: dia, agenda, estudos, hábitos, autocuidado, espiritualidade e descanso em um só lugar.",
+  "lang": "pt-BR",
+  "start_url": "./index.html#/hoje",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FAF7F0",
+  "theme_color": "#FAF7F0",
+  "icons": [
+    { "src": "assets/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "assets/icon-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

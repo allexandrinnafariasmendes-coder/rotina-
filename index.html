@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="auto">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#FAF7F0" />
+  <meta name="description" content="Minha Rotina — uma central de vida: dia, agenda, estudos, hábitos, autocuidado e descanso em um só lugar." />
+  <title>Minha Rotina</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="assets/icon-180.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Minha Rotina" />
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topo">
+      <h1 class="topo__titulo" id="tituloTela">Hoje</h1>
+      <div class="topo__acoes">
+        <span class="topo__tempo versalete" id="tempoLiturgico" title="Tempo litúrgico"></span>
+        <button class="btn-icone" id="btnTema" type="button" title="Alternar tema" aria-label="Alternar tema">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 0 0 16z" fill="currentColor" stroke="none"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="tela" id="tela" tabindex="-1"></main>
+
+    <nav class="barra-abas" id="abas" aria-label="Navegação principal">
+      <a class="aba" href="#/hoje" data-rota="hoje">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10.4L12 4l8 6.4V19a1.3 1.3 0 0 1-1.3 1.3H5.3A1.3 1.3 0 0 1 4 19z"/><path d="M9.6 20.3v-5.8h4.8v5.8"/></svg>
+        <span>Hoje</span>
+      </a>
+      <a class="aba" href="#/agenda" data-rota="agenda">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.6" y="5" width="16.8" height="15.4" rx="1"/><path d="M3.6 9.5h16.8M8.2 3.5v3M15.8 3.5v3"/></svg>
+        <span>Agenda</span>
+      </a>
+      <a class="aba" href="#/tarefas" data-rota="tarefas">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.3l1.8 1.8 3.3-3.4M4 16.6l1.8 1.8 3.3-3.4M12.6 7.5h7.4M12.6 16.9h7.4"/></svg>
+        <span>Tarefas</span>
+      </a>
+      <a class="aba" href="#/estudos" data-rota="estudos">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.4h6.3A1.7 1.7 0 0 1 12 7.1v12a1.4 1.4 0 0 0-1.4-1.4H4z"/><path d="M20 5.4h-6.3A1.7 1.7 0 0 0 12 7.1v12a1.4 1.4 0 0 1 1.4-1.4H20z"/></svg>
+        <span>Estudos</span>
+      </a>
+      <a class="aba" href="#/assistente" data-rota="assistente">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19.2c6.6.6 12-3.4 13.8-11.4a13 13 0 0 0-11.2 5.6C6.2 15.6 5.4 17.4 5 19.2z"/><path d="M6.6 17.6c2-3 4.4-5 7.4-6.4"/></svg>
+        <span>Assistente</span>
+      </a>
+      <a class="aba" href="#/mais" data-rota="mais">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 7.5h15M4.5 12h15M4.5 16.5h15"/></svg>
+        <span>Mais</span>
+      </a>
+    </nav>
+  </div>
+
+  <div class="fundo-painel" id="fundoPainel" hidden>
+    <section class="painel" id="painel" role="dialog" aria-modal="true" aria-labelledby="painelTitulo">
+      <div class="painel__puxador" aria-hidden="true"></div>
+      <h2 class="painel__titulo" id="painelTitulo"></h2>
+      <form class="painel__form" id="painelForm" novalidate></form>
+    </section>
+  </div>
+
+  <div class="recado" id="recado" role="status" aria-live="polite" hidden></div>
+
+  <script src="js/util.js"></script>
+  <script src="js/rotina-base.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/motor.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/view-hoje.js"></script>
+  <script src="js/view-agenda.js"></script>
+  <script src="js/view-tarefas.js"></script>
+  <script src="js/view-estudos.js"></script>
+  <script src="js/view-objetivos.js"></script>
+  <script src="js/view-habitos.js"></script>
+  <script src="js/view-autocuidado.js"></script>
+  <script src="js/view-espiritual.js"></script>
+  <script src="js/view-semana.js"></script>
+  <script src="js/view-assistente.js"></script>
+  <script src="js/view-mais.js"></script>
+  <script src="js/view-ajustes.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
