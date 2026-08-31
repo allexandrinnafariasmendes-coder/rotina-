@@ -3959,6 +3959,66 @@ a { color: inherit; text-decoration: none; }
   var App = window.App;
   var u = App.util, el = u.el, ui = App.ui;
 
+  /* Sugestões para quem está começando — ou para quem trouxe a rotina de
+     outro aparelho e ficou sem as práticas. Nada é imposto: você escolhe. */
+  var SUGESTOES = [
+    { titulo: 'Oração da manhã', momento: 'manha' },
+    { titulo: 'Terço', momento: 'qualquer' },
+    { titulo: 'Leitura espiritual', momento: 'tarde' },
+    { titulo: 'Exame de consciência', momento: 'noite' },
+    { titulo: 'Missa', momento: 'qualquer' },
+    { titulo: 'Adoração', momento: 'qualquer' },
+    { titulo: 'Ângelus', momento: 'qualquer' },
+    { titulo: 'Oração da noite', momento: 'noite' }
+  ];
+
+  function painelSugestoes(store) {
+    var jaTem = {};
+    store.estado.espiritual.praticas.forEach(function (p) { jaTem[p.titulo] = true; });
+
+    var disponiveis = SUGESTOES.filter(function (s) { return !jaTem[s.titulo]; });
+    if (!disponiveis.length) { ui.aviso('Você já tem todas as sugestões'); return; }
+
+    var escolhidas = disponiveis.slice(0, 4).map(function (s) { return s.titulo; });
+    var lista = el('div.lista-check');
+
+    function desenhar() {
+      lista.innerHTML = '';
+      disponiveis.forEach(function (s) {
+        var dentro = escolhidas.indexOf(s.titulo) !== -1;
+        lista.appendChild(ui.linhaCheck(s.titulo, dentro, function () {
+          var i = escolhidas.indexOf(s.titulo);
+          if (i === -1) escolhidas.push(s.titulo); else escolhidas.splice(i, 1);
+          desenhar();
+        }));
+      });
+    }
+    desenhar();
+
+    ui.abrirPainel('Práticas sugeridas', [
+      el('p.mini.sub', { text: 'Marque as que fazem sentido para você. Dá para editar ou remover depois, e acrescentar as suas.' }),
+      lista,
+      el('div.linha-btn.linha-btn--fim', { style: 'margin-top:14px' }, [
+        el('button.btn.btn--fantasma', { type: 'button', text: 'Cancelar', onclick: ui.fechar }),
+        el('button.btn.btn--principal', {
+          type: 'button', text: 'Adicionar',
+          onclick: function () {
+            if (!escolhidas.length) { ui.aviso('Escolha ao menos uma'); return; }
+            store.commit(function (st) {
+              SUGESTOES.forEach(function (s) {
+                if (escolhidas.indexOf(s.titulo) === -1) return;
+                st.espiritual.praticas.push({ id: u.id(), titulo: s.titulo, momento: s.momento });
+              });
+            });
+            ui.fechar();
+            ui.aviso(u.plural(escolhidas.length, 'prática adicionada', 'práticas adicionadas'));
+            App.render();
+          }
+        })
+      ])
+    ]);
+  }
+
   function formPratica(store, pratica) {
     var novo = !pratica;
     ui.abrirFormulario({
@@ -4063,9 +4123,14 @@ a { color: inherit; text-decoration: none; }
           })),
           el('p.mini.fraco', { style: 'margin-top:10px;font-style:italic',
             text: 'Aqui não há sequência nem pontuação. Um dia sem marcar não apaga nada.' })
-        ]) : ui.vazio('Nenhuma prática cadastrada', 'Comece com uma só.'),
-        el('button.btn.btn--suave.btn--p', { style: 'margin-top:10px',
-          type: 'button', text: '+ Prática', onclick: function () { formPratica(store, null); } }),
+        ]) : ui.vazio('Nenhuma prática cadastrada',
+              'Escolha entre as sugestões abaixo ou escreva a sua.'),
+        el('div.linha-btn', { style: 'margin-top:10px' }, [
+          el('button.btn.btn--suave.btn--p', {
+            type: 'button', text: '+ Prática', onclick: function () { formPratica(store, null); } }),
+          el('button.btn.btn--p' + (esp.praticas.length ? '.btn--suave' : '.btn--principal'), {
+            type: 'button', text: 'Práticas sugeridas', onclick: function () { painelSugestoes(store); } })
+        ]),
 
         ui.tituloSecao('Intenções', u.plural(abertas.length, 'intenção', 'intenções')),
         abertas.length ? el('div.pilha.pilha--junta', {}, abertas.map(function (i) {

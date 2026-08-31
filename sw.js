@@ -1,5 +1,5 @@
 /* Cache simples para o app abrir sem internet. */
-var CACHE = 'minha-rotina-v5';
+var CACHE = 'minha-rotina-v6';
 var ARQUIVOS = [
   './',
   './index.html',
