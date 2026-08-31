@@ -181,6 +181,26 @@
           ])
         ]),
 
+        el('div.cartao.pilha.pilha--junta', {}, [
+          el('div.item__titulo', { text: 'Estilo visual' }),
+          el('p.mini.sub', { text: 'Missal é sóbrio, de papel e tinta. Limonada é aquarela, com papel de parede de limões e ramos.' }),
+          el('div.linha-btn', {}, [
+            { v: 'missal', r: 'Missal' },
+            { v: 'limonada', r: 'Limonada' }
+          ].map(function (e) {
+            return el('button.opcao', {
+              type: 'button', text: e.r,
+              'aria-pressed': (a.estilo || 'missal') === e.v ? 'true' : 'false',
+              onclick: function () {
+                store.commit(function (st) { st.ajustes.estilo = e.v; });
+                App.aplicarTema();
+                ui.aviso('Estilo: ' + e.r);
+                App.render();
+              }
+            });
+          }))
+        ]),
+
         bloco('Aparência', 'Vale para este aparelho.', ['auto', 'claro', 'escuro'].map(function (t) {
           var rotulos = { auto: 'Automático', claro: 'Claro', escuro: 'Escuro' };
           return el('button.btn.btn--p' + (a.tema === t ? '.btn--principal' : '.btn--fantasma'), {

@@ -69,6 +69,7 @@
   function aplicarTema() {
     var raiz = document.documentElement;
     raiz.setAttribute('data-theme', store.estado.ajustes.tema || 'auto');
+    raiz.setAttribute('data-estilo', store.estado.ajustes.estilo || 'missal');
 
     var p = App.motor.paletaLiturgica(App.util.hoje(), temaEscuro());
     raiz.style.setProperty('--sazonal', p.cores[0]);

@@ -517,6 +517,136 @@ a { color: inherit; text-decoration: none; }
 
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 
+/* ---------------------------------------------------------------
+   Estilo "Limonada" — papel de parede de aquarela.
+
+   Creme com listras de sálvia, rodelas de limão e ramos desenhados
+   em SVG (nada é baixado: o padrão vive dentro do próprio CSS).
+   Vale quando o app está com data-estilo="limonada"; sem isso,
+   continua valendo a direção Missal.
+----------------------------------------------------------------*/
+
+html[data-estilo="limonada"] {
+  --papel: #FBF7EA;
+  --superficie: #FFFDF7;
+  --superficie-2: #F4F0DF;
+  --filete: #E7E0C9;
+  --filete-forte: #D2C9AC;
+  --tinta: #4A4636;
+  --marrom: #7C7452;
+  --suave: #756F58;
+  --fraco: #A79F84;
+
+  --rubrica: #B4737A;
+  --rubrica-clara: #F8EDEC;
+  --ouro: #D9B44F;
+  --ouro-claro: #FAF3DC;
+  --blush: #F0D9D6;
+  --blush-claro: #FBF1EE;
+
+  --sazonal: #8FA57F;
+  --sazonal-suave: #EDF1E5;
+  --sazonal-forte: #6E8760;
+  --primaria-texto: #FFFDF7;
+
+  --raio: 16px;
+  --raio-p: 10px;
+
+  --listra: #E9EDE1;
+  --veu: rgba(251, 247, 234, .55);
+  --padrao: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22360%22 height=%22360%22 viewBox=%220 0 360 360%22%3E %3C%21-- Padr%C3%A3o %22Limonada%22: rodelas de lim%C3%A3o e ramos, em aquarela suave. Desenhado para repetir sem emenda em blocos de 360px. --%3E %3Cdefs%3E %3Cg id=%22limao%22%3E %3Cpath d=%22M0 0 A31 31 0 0 0 62 0 Z%22 fill=%22%23F1D785%22/%3E %3Cpath d=%22M0 0 A31 31 0 0 0 62 0 Z%22 fill=%22none%22 stroke=%22%23E0B95A%22 stroke-width=%222.4%22/%3E %3Cpath d=%22M31 0 L31 29 M31 0 L10 22 M31 0 L52 22 M31 0 L19 28 M31 0 L43 28%22 stroke=%22%23FBF3D8%22 stroke-width=%221.8%22 stroke-linecap=%22round%22/%3E %3C/g%3E %3Cg id=%22ramo%22%3E %3Cpath d=%22M0 24 C4 15 10 8 18 3%22 fill=%22none%22 stroke=%22%2395A986%22 stroke-width=%221.6%22 stroke-linecap=%22round%22/%3E %3Cpath d=%22M6 17 C2 11 3 4 8 1 C12 7 11 14 6 17 Z%22 fill=%22%23A6B995%22/%3E %3Cpath d=%22M11 11 C13 4 18 0 24 1 C23 8 18 13 11 11 Z%22 fill=%22%23B6C7A6%22/%3E %3C/g%3E %3C/defs%3E %3Cg opacity=%220.34%22%3E %3Cuse href=%22%23limao%22 x=%2240%22 y=%2262%22 transform=%22rotate(-14 71 62)%22/%3E %3Cuse href=%22%23limao%22 x=%22238%22 y=%22246%22 transform=%22rotate(22 269 246)%22/%3E %3Cuse href=%22%23ramo%22 x=%22256%22 y=%2270%22/%3E %3Cuse href=%22%23ramo%22 x=%2270%22 y=%22262%22 transform=%22rotate(-24 82 274)%22/%3E %3Cuse href=%22%23ramo%22 x=%22168%22 y=%22168%22 transform=%22rotate(40 180 180)%22/%3E %3Ccircle cx=%22160%22 cy=%2244%22 r=%222.4%22 fill=%22%23E6D3A0%22/%3E %3Ccircle cx=%22324%22 cy=%22186%22 r=%222%22 fill=%22%23E6D3A0%22/%3E %3Ccircle cx=%2226%22 cy=%22196%22 r=%222.2%22 fill=%22%23C6D3B8%22/%3E %3Ccircle cx=%22300%22 cy=%22330%22 r=%221.8%22 fill=%22%23C6D3B8%22/%3E %3Ccircle cx=%22116%22 cy=%22336%22 r=%222.2%22 fill=%22%23E6D3A0%22/%3E %3C/g%3E %3C/svg%3E");
+}
+
+html[data-estilo="limonada"][data-theme="escuro"],
+html[data-estilo="limonada"][data-theme="auto"] {
+  --sazonal: #A8BC98;
+  --sazonal-forte: #BDCFAE;
+}
+
+@media (prefers-color-scheme: dark) {
+  html[data-estilo="limonada"][data-theme="auto"] {
+    --papel: #1B1A14;
+    --superficie: #232117;
+    --superficie-2: #2B2819;
+    --filete: #3A3624;
+    --filete-forte: #4B4630;
+    --tinta: #F2EEDD;
+    --marrom: #DCCFA4;
+    --suave: #B6AF95;
+    --fraco: #877F66;
+    --listra: #232214;
+    --veu: rgba(27, 26, 20, .55);
+    --primaria-texto: #1B1A14;
+  }
+}
+html[data-estilo="limonada"][data-theme="escuro"] {
+  --papel: #1B1A14;
+  --superficie: #232117;
+  --superficie-2: #2B2819;
+  --filete: #3A3624;
+  --filete-forte: #4B4630;
+  --tinta: #F2EEDD;
+  --marrom: #DCCFA4;
+  --suave: #B6AF95;
+  --fraco: #877F66;
+  --listra: #232214;
+  --veu: rgba(27, 26, 20, .55);
+  --primaria-texto: #1B1A14;
+}
+
+/* O papel de parede fica atrás de tudo, fixo, sem atrapalhar a leitura:
+   o conteúdo mora em cartões opacos e o padrão aparece nas respiradas. */
+html[data-estilo="limonada"] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  /* um véu de papel por cima deixa o desenho presente, mas quieto */
+  background:
+    linear-gradient(var(--veu), var(--veu)),
+    var(--padrao) repeat 0 0 / 360px 360px,
+    repeating-linear-gradient(90deg, var(--listra) 0 16px, transparent 16px 56px),
+    var(--papel);
+}
+html[data-estilo="limonada"][data-theme="escuro"] body::before,
+html[data-estilo="limonada"] body::before { opacity: 1; }
+@media (prefers-color-scheme: dark) {
+  html[data-estilo="limonada"][data-theme="auto"] body::before { opacity: .5; }
+}
+html[data-estilo="limonada"][data-theme="escuro"] body::before { opacity: .5; }
+
+html[data-estilo="limonada"] body { background: transparent; }
+
+/* Superfícies um pouco mais macias, para combinar com a aquarela. */
+html[data-estilo="limonada"] .topo,
+html[data-estilo="limonada"] .barra-abas {
+  background: color-mix(in srgb, var(--papel) 88%, transparent);
+}
+html[data-estilo="limonada"] .cartao,
+html[data-estilo="limonada"] .item,
+html[data-estilo="limonada"] .numero,
+html[data-estilo="limonada"] .cronometro,
+html[data-estilo="limonada"] .semana-fita,
+html[data-estilo="limonada"] .vazio {
+  box-shadow: 0 1px 2px rgba(96, 88, 56, .04), 0 10px 24px rgba(96, 88, 56, .05);
+}
+html[data-estilo="limonada"] .item { border-left-width: 1px; border-left-color: var(--filete); }
+html[data-estilo="limonada"] .item--feito {
+  opacity: 1;
+  background: var(--superficie);
+  color: var(--fraco);
+}
+html[data-estilo="limonada"] .item--feito .item__titulo,
+html[data-estilo="limonada"] .item--feito .item__nota { color: var(--fraco); }
+html[data-estilo="limonada"] .item--agora { border-left: 3px solid var(--sazonal); }
+html[data-estilo="limonada"] .btn { border-radius: 999px; }
+html[data-estilo="limonada"] .aba.ativa { color: var(--sazonal-forte); }
+html[data-estilo="limonada"] .hoje-topo__frase { border-top-color: var(--ouro); }
+html[data-estilo="limonada"] .painel { border-radius: 22px 22px 0 0; border-top-width: 3px; }
+@media (min-width: 700px) {
+  html[data-estilo="limonada"] .painel { border-radius: 20px; }
+}
+
   </style>
 </head>
 <body>
@@ -883,6 +1013,7 @@ a { color: inherit; text-decoration: none; }
       ajustes: {
         nome: '',
         tema: 'auto',
+        estilo: 'missal',
         semeado: false,
         acordar: '05:00',
         dormir: '22:00',
@@ -936,6 +1067,8 @@ a { color: inherit; text-decoration: none; }
     base.ajustes.secoes = Object.assign({ estudos: true, autocuidado: true, espiritual: true, objetivos: true },
       (d.ajustes && d.ajustes.secoes) || {});
     base.ajustes.lema = base.ajustes.lema || '';
+    base.ajustes.estilo = ['missal', 'limonada'].indexOf(base.ajustes.estilo) !== -1
+      ? base.ajustes.estilo : 'missal';
     /* Quem já tinha o quadro carregado antes deste controle existir está em dia:
        o aviso só aparece para mudanças daqui em diante. */
     base.ajustes.rotinaVersao = d.ajustes && d.ajustes.rotinaVersao !== undefined
@@ -4930,6 +5063,26 @@ a { color: inherit; text-decoration: none; }
           ])
         ]),
 
+        el('div.cartao.pilha.pilha--junta', {}, [
+          el('div.item__titulo', { text: 'Estilo visual' }),
+          el('p.mini.sub', { text: 'Missal é sóbrio, de papel e tinta. Limonada é aquarela, com papel de parede de limões e ramos.' }),
+          el('div.linha-btn', {}, [
+            { v: 'missal', r: 'Missal' },
+            { v: 'limonada', r: 'Limonada' }
+          ].map(function (e) {
+            return el('button.opcao', {
+              type: 'button', text: e.r,
+              'aria-pressed': (a.estilo || 'missal') === e.v ? 'true' : 'false',
+              onclick: function () {
+                store.commit(function (st) { st.ajustes.estilo = e.v; });
+                App.aplicarTema();
+                ui.aviso('Estilo: ' + e.r);
+                App.render();
+              }
+            });
+          }))
+        ]),
+
         bloco('Aparência', 'Vale para este aparelho.', ['auto', 'claro', 'escuro'].map(function (t) {
           var rotulos = { auto: 'Automático', claro: 'Claro', escuro: 'Escuro' };
           return el('button.btn.btn--p' + (a.tema === t ? '.btn--principal' : '.btn--fantasma'), {
@@ -5086,6 +5239,7 @@ a { color: inherit; text-decoration: none; }
   function aplicarTema() {
     var raiz = document.documentElement;
     raiz.setAttribute('data-theme', store.estado.ajustes.tema || 'auto');
+    raiz.setAttribute('data-estilo', store.estado.ajustes.estilo || 'missal');
 
     var p = App.motor.paletaLiturgica(App.util.hoje(), temaEscuro());
     raiz.style.setProperty('--sazonal', p.cores[0]);

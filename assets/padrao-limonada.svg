@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="360" viewBox="0 0 360 360">
+  <!-- Padrão "Limonada": rodelas de limão e ramos, em aquarela suave.
+       Desenhado para repetir sem emenda em blocos de 360px. -->
+  <defs>
+    <g id="limao">
+      <path d="M0 0 A31 31 0 0 0 62 0 Z" fill="#F1D785"/>
+      <path d="M0 0 A31 31 0 0 0 62 0 Z" fill="none" stroke="#E0B95A" stroke-width="2.4"/>
+      <path d="M31 0 L31 29 M31 0 L10 22 M31 0 L52 22 M31 0 L19 28 M31 0 L43 28"
+            stroke="#FBF3D8" stroke-width="1.8" stroke-linecap="round"/>
+    </g>
+    <g id="ramo">
+      <path d="M0 24 C4 15 10 8 18 3" fill="none" stroke="#95A986" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M6 17 C2 11 3 4 8 1 C12 7 11 14 6 17 Z" fill="#A6B995"/>
+      <path d="M11 11 C13 4 18 0 24 1 C23 8 18 13 11 11 Z" fill="#B6C7A6"/>
+    </g>
+  </defs>
+  <g opacity="0.34">
+    <use href="#limao" x="40" y="62" transform="rotate(-14 71 62)"/>
+    <use href="#limao" x="238" y="246" transform="rotate(22 269 246)"/>
+    <use href="#ramo" x="256" y="70"/>
+    <use href="#ramo" x="70" y="262" transform="rotate(-24 82 274)"/>
+    <use href="#ramo" x="168" y="168" transform="rotate(40 180 180)"/>
+    <circle cx="160" cy="44" r="2.4" fill="#E6D3A0"/>
+    <circle cx="324" cy="186" r="2" fill="#E6D3A0"/>
+    <circle cx="26" cy="196" r="2.2" fill="#C6D3B8"/>
+    <circle cx="300" cy="330" r="1.8" fill="#C6D3B8"/>
+    <circle cx="116" cy="336" r="2.2" fill="#E6D3A0"/>
+  </g>
+</svg>

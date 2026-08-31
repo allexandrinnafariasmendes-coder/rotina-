@@ -48,6 +48,7 @@
       ajustes: {
         nome: '',
         tema: 'auto',
+        estilo: 'missal',
         semeado: false,
         acordar: '05:00',
         dormir: '22:00',
@@ -101,6 +102,8 @@
     base.ajustes.secoes = Object.assign({ estudos: true, autocuidado: true, espiritual: true, objetivos: true },
       (d.ajustes && d.ajustes.secoes) || {});
     base.ajustes.lema = base.ajustes.lema || '';
+    base.ajustes.estilo = ['missal', 'limonada'].indexOf(base.ajustes.estilo) !== -1
+      ? base.ajustes.estilo : 'missal';
     /* Quem já tinha o quadro carregado antes deste controle existir está em dia:
        o aviso só aparece para mudanças daqui em diante. */
     base.ajustes.rotinaVersao = d.ajustes && d.ajustes.rotinaVersao !== undefined
