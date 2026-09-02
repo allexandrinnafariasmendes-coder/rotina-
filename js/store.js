@@ -444,13 +444,13 @@
     commit(function (s) { s.ajustes.rotinaAdiada = quadro().versao; });
   }
 
-  /* Aplica a versão nova do quadro casando cada item pela chave: os horários
-     mudam, mas os ids continuam os mesmos — então marcações, tarefas, estudos
-     e histórico ficam todos de pé. O que você criou por conta não é tocado. */
-  function atualizarRotina() {
-    var ex = exemplo();
+  /* Casa cada item do quadro pela chave e troca só o que descreve o horário,
+     mantendo o mesmo id — assim marcações, tarefas, sessões e histórico
+     continuam de pé. O que a pessoa criou por conta (sem chave) não é tocado. */
+  function aplicarQuadro(ex, alvo) {
+    var s = alvo;
 
-    commit(function (s) {
+    if (ex.blocos) {
       var blocoPorChave = {};
       s.blocos.forEach(function (b) { if (b.chave) blocoPorChave[b.chave] = b; });
 
@@ -467,9 +467,10 @@
         atual.fixo = novo.fixo;
         atual.nota = novo.nota;
       });
-      /* sai só o que veio do quadro e não existe mais nele */
       s.blocos = s.blocos.filter(function (b) { return !b.chave || chavesDoQuadro[b.chave]; });
+    }
 
+    if (ex.rituais) {
       var ritualPorChave = {};
       s.rituais.forEach(function (r) { if (r.chave) ritualPorChave[r.chave] = r; });
 
@@ -482,17 +483,73 @@
         atual.periodo = novo.periodo;
         atual.hora = novo.hora;
         atual.dias = novo.dias;
-        /* os passos são casados pelo texto, para as marcações continuarem valendo */
+        /* os passos são casados pelo texto, pelo mesmo motivo */
         var porTitulo = {};
         atual.itens.forEach(function (i) { porTitulo[i.titulo] = i; });
         atual.itens = novo.itens.map(function (i) { return porTitulo[i.titulo] || i; });
       });
       s.rituais = s.rituais.filter(function (r) { return !r.chave || chavesRituais[r.chave]; });
+    }
 
+    if (ex.alternativas) s.alternativas = ex.alternativas;
+    if (ex.prioridades) s.ajustes.prioridades = ex.prioridades;
+    if (typeof ex.lema === 'string') s.ajustes.lema = ex.lema;
+    if (ex.acordar) s.ajustes.acordar = ex.acordar;
+    if (ex.dormir) s.ajustes.dormir = ex.dormir;
+  }
+
+  function atualizarRotina() {
+    var ex = exemplo();
+    commit(function (s) {
+      aplicarQuadro(ex, s);
       s.ajustes.rotinaVersao = quadro().versao;
       s.ajustes.quadroId = quadro().id;
       s.ajustes.rotinaAdiada = 0;
     });
+  }
+
+  /* Arquivo de rotina: só os horários, sem nada do histórico. Serve para
+     receber uma rotina nova sem perder o que já foi marcado. */
+  function exportarRotina() {
+    return JSON.stringify({
+      tipo: 'rotina',
+      quadro: quadro().id,
+      nome: nomeDoQuadro(),
+      versao: quadro().versao,
+      blocos: estado.blocos.filter(function (b) { return b.chave; }),
+      rituais: estado.rituais.filter(function (r) { return r.chave; }),
+      prioridades: estado.ajustes.prioridades,
+      alternativas: estado.alternativas,
+      lema: estado.ajustes.lema,
+      acordar: estado.ajustes.acordar,
+      dormir: estado.ajustes.dormir
+    }, null, 2);
+  }
+
+  function importarRotina(texto) {
+    var d = JSON.parse(texto);
+    if (d.tipo !== 'rotina') throw new Error('Este arquivo não é uma rotina.');
+
+    /* passa pela mesma normalização dos dados salvos, para um arquivo
+       torto não entrar no app */
+    var limpo = normalizar({ blocos: d.blocos, rituais: d.rituais, alternativas: d.alternativas });
+
+    commit(function (s) {
+      aplicarQuadro({
+        blocos: limpo.blocos,
+        rituais: limpo.rituais,
+        alternativas: limpo.alternativas,
+        prioridades: d.prioridades,
+        lema: d.lema,
+        acordar: d.acordar,
+        dormir: d.dormir
+      }, s);
+      if (d.quadro) s.ajustes.quadroId = d.quadro;
+      if (d.versao) s.ajustes.rotinaVersao = Number(d.versao) || 0;
+      s.ajustes.rotinaAdiada = 0;
+    });
+
+    return { nome: d.nome || 'rotina', blocos: (d.blocos || []).length };
   }
 
   function limpar(manterEstrutura) {
@@ -547,6 +604,8 @@
     exemploDeLema: exemploDeLema,
     rotinaDesatualizada: rotinaDesatualizada,
     atualizarRotina: atualizarRotina,
+    exportarRotina: exportarRotina,
+    importarRotina: importarRotina,
     adiarAtualizacao: adiarAtualizacao,
     limpar: limpar
   };

@@ -39,6 +39,7 @@
       var chave = chaveSemana(refDia);
       var reflexao = store.estado.semanas[chave];
       var prioridades = store.estado.ajustes.prioridades || [];
+      var temExercicio = r.exercicios > 0 || store.estado.blocos.some(function (b) { return b.area === 'exercicio'; });
       var primeiro = r.dias[0], ultimo = r.dias[6];
 
       var colunas = el('div.colunas', {}, r.dias.map(function (d) {
@@ -84,10 +85,11 @@
             el('div.numero__valor', { text: r.mediaSono !== null ? r.mediaSono.toFixed(1).replace('.', ',') + 'h' : '—' }),
             el('div.numero__rotulo', { text: 'média de sono' })
           ]),
-          el('div.numero', {}, [
+          /* sem exercício na rotina, o app não cobra o que ela não escolheu */
+          temExercicio ? el('div.numero', {}, [
             el('div.numero__valor', { text: String(r.exercicios) }),
             el('div.numero__rotulo', { text: 'sessões de exercício' })
-          ]),
+          ]) : null,
           el('div.numero', {}, [
             el('div.numero__valor', { text: String(r.autocuidado) }),
             el('div.numero__rotulo', { text: 'momentos de autocuidado' })

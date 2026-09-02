@@ -1409,13 +1409,13 @@ html[data-estilo="limonada"] .painel { border-radius: 22px 22px 0 0; border-top-
     commit(function (s) { s.ajustes.rotinaAdiada = quadro().versao; });
   }
 
-  /* Aplica a versão nova do quadro casando cada item pela chave: os horários
-     mudam, mas os ids continuam os mesmos — então marcações, tarefas, estudos
-     e histórico ficam todos de pé. O que você criou por conta não é tocado. */
-  function atualizarRotina() {
-    var ex = exemplo();
+  /* Casa cada item do quadro pela chave e troca só o que descreve o horário,
+     mantendo o mesmo id — assim marcações, tarefas, sessões e histórico
+     continuam de pé. O que a pessoa criou por conta (sem chave) não é tocado. */
+  function aplicarQuadro(ex, alvo) {
+    var s = alvo;
 
-    commit(function (s) {
+    if (ex.blocos) {
       var blocoPorChave = {};
       s.blocos.forEach(function (b) { if (b.chave) blocoPorChave[b.chave] = b; });
 
@@ -1432,9 +1432,10 @@ html[data-estilo="limonada"] .painel { border-radius: 22px 22px 0 0; border-top-
         atual.fixo = novo.fixo;
         atual.nota = novo.nota;
       });
-      /* sai só o que veio do quadro e não existe mais nele */
       s.blocos = s.blocos.filter(function (b) { return !b.chave || chavesDoQuadro[b.chave]; });
+    }
 
+    if (ex.rituais) {
       var ritualPorChave = {};
       s.rituais.forEach(function (r) { if (r.chave) ritualPorChave[r.chave] = r; });
 
@@ -1447,17 +1448,73 @@ html[data-estilo="limonada"] .painel { border-radius: 22px 22px 0 0; border-top-
         atual.periodo = novo.periodo;
         atual.hora = novo.hora;
         atual.dias = novo.dias;
-        /* os passos são casados pelo texto, para as marcações continuarem valendo */
+        /* os passos são casados pelo texto, pelo mesmo motivo */
         var porTitulo = {};
         atual.itens.forEach(function (i) { porTitulo[i.titulo] = i; });
         atual.itens = novo.itens.map(function (i) { return porTitulo[i.titulo] || i; });
       });
       s.rituais = s.rituais.filter(function (r) { return !r.chave || chavesRituais[r.chave]; });
+    }
 
+    if (ex.alternativas) s.alternativas = ex.alternativas;
+    if (ex.prioridades) s.ajustes.prioridades = ex.prioridades;
+    if (typeof ex.lema === 'string') s.ajustes.lema = ex.lema;
+    if (ex.acordar) s.ajustes.acordar = ex.acordar;
+    if (ex.dormir) s.ajustes.dormir = ex.dormir;
+  }
+
+  function atualizarRotina() {
+    var ex = exemplo();
+    commit(function (s) {
+      aplicarQuadro(ex, s);
       s.ajustes.rotinaVersao = quadro().versao;
       s.ajustes.quadroId = quadro().id;
       s.ajustes.rotinaAdiada = 0;
     });
+  }
+
+  /* Arquivo de rotina: só os horários, sem nada do histórico. Serve para
+     receber uma rotina nova sem perder o que já foi marcado. */
+  function exportarRotina() {
+    return JSON.stringify({
+      tipo: 'rotina',
+      quadro: quadro().id,
+      nome: nomeDoQuadro(),
+      versao: quadro().versao,
+      blocos: estado.blocos.filter(function (b) { return b.chave; }),
+      rituais: estado.rituais.filter(function (r) { return r.chave; }),
+      prioridades: estado.ajustes.prioridades,
+      alternativas: estado.alternativas,
+      lema: estado.ajustes.lema,
+      acordar: estado.ajustes.acordar,
+      dormir: estado.ajustes.dormir
+    }, null, 2);
+  }
+
+  function importarRotina(texto) {
+    var d = JSON.parse(texto);
+    if (d.tipo !== 'rotina') throw new Error('Este arquivo não é uma rotina.');
+
+    /* passa pela mesma normalização dos dados salvos, para um arquivo
+       torto não entrar no app */
+    var limpo = normalizar({ blocos: d.blocos, rituais: d.rituais, alternativas: d.alternativas });
+
+    commit(function (s) {
+      aplicarQuadro({
+        blocos: limpo.blocos,
+        rituais: limpo.rituais,
+        alternativas: limpo.alternativas,
+        prioridades: d.prioridades,
+        lema: d.lema,
+        acordar: d.acordar,
+        dormir: d.dormir
+      }, s);
+      if (d.quadro) s.ajustes.quadroId = d.quadro;
+      if (d.versao) s.ajustes.rotinaVersao = Number(d.versao) || 0;
+      s.ajustes.rotinaAdiada = 0;
+    });
+
+    return { nome: d.nome || 'rotina', blocos: (d.blocos || []).length };
   }
 
   function limpar(manterEstrutura) {
@@ -1512,6 +1569,8 @@ html[data-estilo="limonada"] .painel { border-radius: 22px 22px 0 0; border-top-
     exemploDeLema: exemploDeLema,
     rotinaDesatualizada: rotinaDesatualizada,
     atualizarRotina: atualizarRotina,
+    exportarRotina: exportarRotina,
+    importarRotina: importarRotina,
     adiarAtualizacao: adiarAtualizacao,
     limpar: limpar
   };
@@ -4351,6 +4410,7 @@ html[data-estilo="limonada"] .painel { border-radius: 22px 22px 0 0; border-top-
       var chave = chaveSemana(refDia);
       var reflexao = store.estado.semanas[chave];
       var prioridades = store.estado.ajustes.prioridades || [];
+      var temExercicio = r.exercicios > 0 || store.estado.blocos.some(function (b) { return b.area === 'exercicio'; });
       var primeiro = r.dias[0], ultimo = r.dias[6];
 
       var colunas = el('div.colunas', {}, r.dias.map(function (d) {
@@ -4396,10 +4456,11 @@ html[data-estilo="limonada"] .painel { border-radius: 22px 22px 0 0; border-top-
             el('div.numero__valor', { text: r.mediaSono !== null ? r.mediaSono.toFixed(1).replace('.', ',') + 'h' : '—' }),
             el('div.numero__rotulo', { text: 'média de sono' })
           ]),
-          el('div.numero', {}, [
+          /* sem exercício na rotina, o app não cobra o que ela não escolheu */
+          temExercicio ? el('div.numero', {}, [
             el('div.numero__valor', { text: String(r.exercicios) }),
             el('div.numero__rotulo', { text: 'sessões de exercício' })
-          ]),
+          ]) : null,
           el('div.numero', {}, [
             el('div.numero__valor', { text: String(r.autocuidado) }),
             el('div.numero__rotulo', { text: 'momentos de autocuidado' })
@@ -4899,6 +4960,49 @@ html[data-estilo="limonada"] .painel { border-radius: 22px 22px 0 0; border-top-
     ui.aviso('Backup salvo: ' + nome);
   }
 
+  /* Lê um arquivo do aparelho e entrega o texto. */
+  function escolherArquivo(aoLer) {
+    var input = el('input', { type: 'file', accept: 'application/json,.json' });
+    input.style.display = 'none';
+    input.addEventListener('change', function () {
+      var arquivo = input.files && input.files[0];
+      if (!arquivo) return;
+      var leitor = new FileReader();
+      leitor.onload = function () { aoLer(String(leitor.result)); };
+      leitor.readAsText(arquivo);
+    });
+    document.body.appendChild(input);
+    input.click();
+    setTimeout(function () { input.remove(); }, 0);
+  }
+
+  function baixarArquivo(nome, conteudo) {
+    var blob = new Blob([conteudo], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = el('a', { href: url, download: nome });
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+
+  function baixarRotina(store) {
+    baixarArquivo('rotina-' + u.hoje() + '.json', store.exportarRotina());
+    ui.aviso('Rotina salva em arquivo');
+  }
+
+  function importarRotina(store) {
+    escolherArquivo(function (texto) {
+      try {
+        var r = store.importarRotina(texto);
+        ui.aviso('Rotina atualizada: ' + u.plural(r.blocos, 'atividade', 'atividades'));
+        App.render();
+      } catch (e) {
+        ui.aviso('Arquivo inválido — isso é uma rotina?');
+      }
+    });
+  }
+
   function restaurarBackup(store) {
     var input = el('input', { type: 'file', accept: 'application/json,.json' });
     input.style.display = 'none';
@@ -5110,9 +5214,15 @@ html[data-estilo="limonada"] .painel { border-radius: 22px 22px 0 0; border-top-
           }))
         ]),
 
-        bloco('Backup', 'Tudo fica só neste aparelho. Guarde uma cópia de vez em quando.', [
+        bloco('Backup', 'Tudo fica só neste aparelho. Guarde uma cópia de vez em quando. O backup leva tudo: rotina, marcações, tarefas e histórico.', [
           el('button.btn.btn--p', { type: 'button', text: '⤓ Baixar backup', onclick: function () { baixarBackup(store); } }),
           el('button.btn.btn--p', { type: 'button', text: '⤒ Restaurar backup', onclick: function () { restaurarBackup(store); } })
+        ]),
+
+        bloco('Arquivo de rotina',
+          'Só os horários, sem nada do histórico. Serve para receber uma rotina nova ou levá-la para outro aparelho sem perder marcações, tarefas e revisões.', [
+          el('button.btn.btn--p', { type: 'button', text: '⤓ Baixar rotina', onclick: function () { baixarRotina(store); } }),
+          el('button.btn.btn--p', { type: 'button', text: '⤒ Importar rotina', onclick: function () { importarRotina(store); } })
         ]),
 
         bloco('Rotina "' + store.nomeDoQuadro() + '"',

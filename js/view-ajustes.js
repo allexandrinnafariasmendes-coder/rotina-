@@ -17,6 +17,49 @@
     ui.aviso('Backup salvo: ' + nome);
   }
 
+  /* Lê um arquivo do aparelho e entrega o texto. */
+  function escolherArquivo(aoLer) {
+    var input = el('input', { type: 'file', accept: 'application/json,.json' });
+    input.style.display = 'none';
+    input.addEventListener('change', function () {
+      var arquivo = input.files && input.files[0];
+      if (!arquivo) return;
+      var leitor = new FileReader();
+      leitor.onload = function () { aoLer(String(leitor.result)); };
+      leitor.readAsText(arquivo);
+    });
+    document.body.appendChild(input);
+    input.click();
+    setTimeout(function () { input.remove(); }, 0);
+  }
+
+  function baixarArquivo(nome, conteudo) {
+    var blob = new Blob([conteudo], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = el('a', { href: url, download: nome });
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+
+  function baixarRotina(store) {
+    baixarArquivo('rotina-' + u.hoje() + '.json', store.exportarRotina());
+    ui.aviso('Rotina salva em arquivo');
+  }
+
+  function importarRotina(store) {
+    escolherArquivo(function (texto) {
+      try {
+        var r = store.importarRotina(texto);
+        ui.aviso('Rotina atualizada: ' + u.plural(r.blocos, 'atividade', 'atividades'));
+        App.render();
+      } catch (e) {
+        ui.aviso('Arquivo inválido — isso é uma rotina?');
+      }
+    });
+  }
+
   function restaurarBackup(store) {
     var input = el('input', { type: 'file', accept: 'application/json,.json' });
     input.style.display = 'none';
@@ -228,9 +271,15 @@
           }))
         ]),
 
-        bloco('Backup', 'Tudo fica só neste aparelho. Guarde uma cópia de vez em quando.', [
+        bloco('Backup', 'Tudo fica só neste aparelho. Guarde uma cópia de vez em quando. O backup leva tudo: rotina, marcações, tarefas e histórico.', [
           el('button.btn.btn--p', { type: 'button', text: '⤓ Baixar backup', onclick: function () { baixarBackup(store); } }),
           el('button.btn.btn--p', { type: 'button', text: '⤒ Restaurar backup', onclick: function () { restaurarBackup(store); } })
+        ]),
+
+        bloco('Arquivo de rotina',
+          'Só os horários, sem nada do histórico. Serve para receber uma rotina nova ou levá-la para outro aparelho sem perder marcações, tarefas e revisões.', [
+          el('button.btn.btn--p', { type: 'button', text: '⤓ Baixar rotina', onclick: function () { baixarRotina(store); } }),
+          el('button.btn.btn--p', { type: 'button', text: '⤒ Importar rotina', onclick: function () { importarRotina(store); } })
         ]),
 
         bloco('Rotina "' + store.nomeDoQuadro() + '"',
