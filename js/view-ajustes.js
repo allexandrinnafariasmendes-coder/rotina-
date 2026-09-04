@@ -60,6 +60,37 @@
     });
   }
 
+  /* Colar a rotina: caminho sem arquivo, pensado para o celular. */
+  function colarRotina(store) {
+    var caixa = el('textarea', {
+      rows: 5, placeholder: 'Cole aqui o código da rotina',
+      'aria-label': 'Código da rotina',
+      style: 'font-family:var(--sans);font-size:12px'
+    });
+
+    ui.abrirPainel('Colar rotina', [
+      el('p.mini.sub', { text: 'Cole o código que você recebeu. Ele traz só os horários — suas marcações, tarefas e histórico continuam como estão.' }),
+      el('div.campo', { style: 'margin-top:10px' }, [caixa]),
+      el('div.linha-btn.linha-btn--fim', { style: 'margin-top:12px' }, [
+        el('button.btn.btn--fantasma', { type: 'button', text: 'Cancelar', onclick: ui.fechar }),
+        el('button.btn.btn--principal', {
+          type: 'button', text: 'Aplicar',
+          onclick: function () {
+            var texto = caixa.value.trim();
+            if (!texto) { ui.aviso('Cole o código primeiro'); return; }
+            store.importarRotinaTexto(texto).then(function (r) {
+              ui.fechar();
+              ui.aviso('Rotina atualizada: ' + u.plural(r.blocos, 'atividade', 'atividades'));
+              App.render();
+            }).catch(function (e) {
+              ui.aviso(e && e.message ? e.message : 'Não consegui ler esse código');
+            });
+          }
+        })
+      ])
+    ]);
+  }
+
   function restaurarBackup(store) {
     var input = el('input', { type: 'file', accept: 'application/json,.json' });
     input.style.display = 'none';
@@ -279,7 +310,8 @@
         bloco('Arquivo de rotina',
           'Só os horários, sem nada do histórico. Serve para receber uma rotina nova ou levá-la para outro aparelho sem perder marcações, tarefas e revisões.', [
           el('button.btn.btn--p', { type: 'button', text: '⤓ Baixar rotina', onclick: function () { baixarRotina(store); } }),
-          el('button.btn.btn--p', { type: 'button', text: '⤒ Importar rotina', onclick: function () { importarRotina(store); } })
+          el('button.btn.btn--p', { type: 'button', text: '⤒ Importar rotina', onclick: function () { importarRotina(store); } }),
+          el('button.btn.btn--p', { type: 'button', text: '⌨ Colar rotina', onclick: function () { colarRotina(store); } })
         ]),
 
         bloco('Rotina "' + store.nomeDoQuadro() + '"',

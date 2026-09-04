@@ -1519,6 +1519,32 @@ html[data-estilo="limonada"] .painel { border-radius: 22px 22px 0 0; border-top-
     return { nome: d.nome || 'rotina', blocos: (d.blocos || []).length };
   }
 
+  /* Código de rotina: o mesmo conteúdo do arquivo, compactado e em texto,
+     para poder ser colado sem passar por pastas e gerenciadores de arquivo. */
+  function textoDoCodigo(codigo) {
+    var limpo = String(codigo || '').replace(/\s+/g, '');
+    var bytes;
+    try {
+      var bin = atob(limpo);
+      bytes = new Uint8Array(bin.length);
+      for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    } catch (e) {
+      return Promise.reject(new Error('Esse código está incompleto ou tem algum caractere a mais.'));
+    }
+    if (typeof DecompressionStream === 'undefined') {
+      return Promise.reject(new Error('Este navegador é antigo demais para ler o código. Use o arquivo de rotina.'));
+    }
+    var fluxo = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+    return new Response(fluxo).text();
+  }
+
+  /* Aceita tanto o conteúdo do arquivo quanto o código colado. */
+  function importarRotinaTexto(texto) {
+    var t = String(texto || '').trim();
+    if (t.charAt(0) === '{') return Promise.resolve(importarRotina(t));
+    return textoDoCodigo(t).then(function (json) { return importarRotina(json); });
+  }
+
   function limpar(manterEstrutura) {
     var guardado = {
       blocos: estado.blocos, rituais: estado.rituais, cuidados: estado.cuidados,
@@ -1573,6 +1599,7 @@ html[data-estilo="limonada"] .painel { border-radius: 22px 22px 0 0; border-top-
     atualizarRotina: atualizarRotina,
     exportarRotina: exportarRotina,
     importarRotina: importarRotina,
+    importarRotinaTexto: importarRotinaTexto,
     adiarAtualizacao: adiarAtualizacao,
     limpar: limpar
   };
@@ -5054,6 +5081,37 @@ html[data-estilo="limonada"] .painel { border-radius: 22px 22px 0 0; border-top-
     });
   }
 
+  /* Colar a rotina: caminho sem arquivo, pensado para o celular. */
+  function colarRotina(store) {
+    var caixa = el('textarea', {
+      rows: 5, placeholder: 'Cole aqui o código da rotina',
+      'aria-label': 'Código da rotina',
+      style: 'font-family:var(--sans);font-size:12px'
+    });
+
+    ui.abrirPainel('Colar rotina', [
+      el('p.mini.sub', { text: 'Cole o código que você recebeu. Ele traz só os horários — suas marcações, tarefas e histórico continuam como estão.' }),
+      el('div.campo', { style: 'margin-top:10px' }, [caixa]),
+      el('div.linha-btn.linha-btn--fim', { style: 'margin-top:12px' }, [
+        el('button.btn.btn--fantasma', { type: 'button', text: 'Cancelar', onclick: ui.fechar }),
+        el('button.btn.btn--principal', {
+          type: 'button', text: 'Aplicar',
+          onclick: function () {
+            var texto = caixa.value.trim();
+            if (!texto) { ui.aviso('Cole o código primeiro'); return; }
+            store.importarRotinaTexto(texto).then(function (r) {
+              ui.fechar();
+              ui.aviso('Rotina atualizada: ' + u.plural(r.blocos, 'atividade', 'atividades'));
+              App.render();
+            }).catch(function (e) {
+              ui.aviso(e && e.message ? e.message : 'Não consegui ler esse código');
+            });
+          }
+        })
+      ])
+    ]);
+  }
+
   function restaurarBackup(store) {
     var input = el('input', { type: 'file', accept: 'application/json,.json' });
     input.style.display = 'none';
@@ -5273,7 +5331,8 @@ html[data-estilo="limonada"] .painel { border-radius: 22px 22px 0 0; border-top-
         bloco('Arquivo de rotina',
           'Só os horários, sem nada do histórico. Serve para receber uma rotina nova ou levá-la para outro aparelho sem perder marcações, tarefas e revisões.', [
           el('button.btn.btn--p', { type: 'button', text: '⤓ Baixar rotina', onclick: function () { baixarRotina(store); } }),
-          el('button.btn.btn--p', { type: 'button', text: '⤒ Importar rotina', onclick: function () { importarRotina(store); } })
+          el('button.btn.btn--p', { type: 'button', text: '⤒ Importar rotina', onclick: function () { importarRotina(store); } }),
+          el('button.btn.btn--p', { type: 'button', text: '⌨ Colar rotina', onclick: function () { colarRotina(store); } })
         ]),
 
         bloco('Rotina "' + store.nomeDoQuadro() + '"',

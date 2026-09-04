@@ -554,6 +554,32 @@
     return { nome: d.nome || 'rotina', blocos: (d.blocos || []).length };
   }
 
+  /* Código de rotina: o mesmo conteúdo do arquivo, compactado e em texto,
+     para poder ser colado sem passar por pastas e gerenciadores de arquivo. */
+  function textoDoCodigo(codigo) {
+    var limpo = String(codigo || '').replace(/\s+/g, '');
+    var bytes;
+    try {
+      var bin = atob(limpo);
+      bytes = new Uint8Array(bin.length);
+      for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    } catch (e) {
+      return Promise.reject(new Error('Esse código está incompleto ou tem algum caractere a mais.'));
+    }
+    if (typeof DecompressionStream === 'undefined') {
+      return Promise.reject(new Error('Este navegador é antigo demais para ler o código. Use o arquivo de rotina.'));
+    }
+    var fluxo = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+    return new Response(fluxo).text();
+  }
+
+  /* Aceita tanto o conteúdo do arquivo quanto o código colado. */
+  function importarRotinaTexto(texto) {
+    var t = String(texto || '').trim();
+    if (t.charAt(0) === '{') return Promise.resolve(importarRotina(t));
+    return textoDoCodigo(t).then(function (json) { return importarRotina(json); });
+  }
+
   function limpar(manterEstrutura) {
     var guardado = {
       blocos: estado.blocos, rituais: estado.rituais, cuidados: estado.cuidados,
@@ -608,6 +634,7 @@
     atualizarRotina: atualizarRotina,
     exportarRotina: exportarRotina,
     importarRotina: importarRotina,
+    importarRotinaTexto: importarRotinaTexto,
     adiarAtualizacao: adiarAtualizacao,
     limpar: limpar
   };
