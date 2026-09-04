@@ -1020,6 +1020,7 @@ html[data-estilo="limonada"] .painel { border-radius: 22px 22px 0 0; border-top-
         lema: '',
         prioridades: [],
         quadroId: '',
+        instalacaoDispensada: false,
         secoes: { estudos: true, autocuidado: true, espiritual: true, objetivos: true }
       },
       alternativas: [],   /* saídas para os dias que não saem como o planejado */
@@ -1069,6 +1070,7 @@ html[data-estilo="limonada"] .painel { border-radius: 22px 22px 0 0; border-top-
     base.ajustes.lema = base.ajustes.lema || '';
     base.ajustes.estilo = ['missal', 'limonada'].indexOf(base.ajustes.estilo) !== -1
       ? base.ajustes.estilo : 'missal';
+    base.ajustes.instalacaoDispensada = !!base.ajustes.instalacaoDispensada;
     /* Quem já tinha o quadro carregado antes deste controle existir está em dia:
        o aviso só aparece para mudanças daqui em diante. */
     base.ajustes.rotinaVersao = d.ajustes && d.ajustes.rotinaVersao !== undefined
@@ -2959,6 +2961,54 @@ html[data-estilo="limonada"] .painel { border-radius: 22px 22px 0 0; border-top-
     ]);
   }
 
+  /* Convite para usar como aplicativo: aparece só enquanto o app está sendo
+     aberto pelo navegador. Instalado, some para sempre. */
+  function convitePraInstalar(store) {
+    if (App.jaInstalado() || store.estado.ajustes.instalacaoDispensada) return null;
+
+    var iOS = App.ehIOS();
+    var direto = App.podeInstalarDireto();
+
+    /* o ícone de compartilhar do iPhone, desenhado, para não haver dúvida */
+    var iconeCompartilhar = el('span', { style: 'display:inline-block;vertical-align:-4px;margin:0 2px' });
+    iconeCompartilhar.innerHTML =
+      '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" ' +
+      'stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<path d="M12 3.6v11"/><path d="M8.4 7.2L12 3.6l3.6 3.6"/>' +
+      '<path d="M6.4 11.2H5.2v8.4h13.6v-8.4h-1.2"/></svg>';
+
+    var passos = iOS
+      ? el('p.mini.sub', { style: 'margin-top:8px' }, [
+          'No Safari, toque em ', iconeCompartilhar,
+          ' na barra de baixo e escolha ',
+          el('strong', { text: '“Adicionar à Tela de Início”' }), '.'
+        ])
+      : el('p.mini.sub', { style: 'margin-top:8px',
+          text: direto
+            ? 'Toque no botão abaixo para instalar.'
+            : 'No menu do navegador (⋮), escolha “Instalar aplicativo” ou “Adicionar à tela inicial”.' });
+
+    return el('div.cartao', { style: 'margin-top:16px;border-left:3px solid var(--sazonal)' }, [
+      el('div.versalete.fraco', { text: 'Usar como aplicativo' }),
+      el('div', { style: 'font-family:var(--serif);font-size:16px;margin-top:6px',
+        text: 'Fica com ícone próprio, abre em tela cheia e funciona sem internet.' }),
+      passos,
+      el('div.linha-btn', { style: 'margin-top:12px' }, [
+        direto ? el('button.btn.btn--p.btn--principal', {
+          type: 'button', text: 'Instalar',
+          onclick: function () { App.instalar(); }
+        }) : null,
+        el('button.btn.btn--p.btn--fantasma', {
+          type: 'button', text: 'Já instalei / não mostrar',
+          onclick: function () {
+            store.commit(function (s) { s.ajustes.instalacaoDispensada = true; });
+            App.render();
+          }
+        })
+      ].filter(Boolean))
+    ]);
+  }
+
   /* Aviso de rotina atualizada: aplica sem apagar o que já foi feito. */
   function atualizacaoDaRotina(store) {
     var novidade = store.rotinaDesatualizada();
@@ -3020,7 +3070,8 @@ html[data-estilo="limonada"] .painel { border-radius: 22px 22px 0 0; border-top-
 
       var avisos = motor.analisarDia(dia).slice(0, 2);
 
-      var filhos = [cabecalho(store, motor), atualizacaoDaRotina(store), agora(motor)];
+      var filhos = [cabecalho(store, motor), convitePraInstalar(store),
+                    atualizacaoDaRotina(store), agora(motor)];
       if (avisos.length) {
         filhos.push(el('div.pilha', { style: 'margin-top:14px' }, avisos.map(ui.avisoCartao)));
       }
@@ -5338,6 +5389,34 @@ html[data-estilo="limonada"] .painel { border-radius: 22px 22px 0 0; border-top-
     });
   }
 
+  /* Já está aberto como aplicativo (tela de início) ou ainda no navegador? */
+  function jaInstalado() {
+    return window.navigator.standalone === true
+      || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+  }
+
+  function ehIOS() {
+    var ua = navigator.userAgent || '';
+    return /iPad|iPhone|iPod/.test(ua)
+      || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  }
+
+  /* No Android o navegador oferece a instalação; guardamos o convite para
+     usar num botão nosso, na hora certa. */
+  var convite = null;
+  window.addEventListener('beforeinstallprompt', function (ev) {
+    ev.preventDefault();
+    convite = ev;
+    render();
+  });
+
+  function instalar() {
+    if (!convite) return false;
+    convite.prompt();
+    convite.userChoice.then(function () { convite = null; render(); });
+    return true;
+  }
+
   function temaEscuro() {
     var t = store.estado.ajustes.tema || 'auto';
     if (t === 'escuro') return true;
@@ -5428,6 +5507,10 @@ html[data-estilo="limonada"] .painel { border-radius: 22px 22px 0 0; border-top-
   }
 
   App.render = render;
+  App.jaInstalado = jaInstalado;
+  App.ehIOS = ehIOS;
+  App.podeInstalarDireto = function () { return !!convite; };
+  App.instalar = instalar;
   App.aplicarTema = aplicarTema;
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar);

@@ -276,6 +276,54 @@
     ]);
   }
 
+  /* Convite para usar como aplicativo: aparece só enquanto o app está sendo
+     aberto pelo navegador. Instalado, some para sempre. */
+  function convitePraInstalar(store) {
+    if (App.jaInstalado() || store.estado.ajustes.instalacaoDispensada) return null;
+
+    var iOS = App.ehIOS();
+    var direto = App.podeInstalarDireto();
+
+    /* o ícone de compartilhar do iPhone, desenhado, para não haver dúvida */
+    var iconeCompartilhar = el('span', { style: 'display:inline-block;vertical-align:-4px;margin:0 2px' });
+    iconeCompartilhar.innerHTML =
+      '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" ' +
+      'stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<path d="M12 3.6v11"/><path d="M8.4 7.2L12 3.6l3.6 3.6"/>' +
+      '<path d="M6.4 11.2H5.2v8.4h13.6v-8.4h-1.2"/></svg>';
+
+    var passos = iOS
+      ? el('p.mini.sub', { style: 'margin-top:8px' }, [
+          'No Safari, toque em ', iconeCompartilhar,
+          ' na barra de baixo e escolha ',
+          el('strong', { text: '“Adicionar à Tela de Início”' }), '.'
+        ])
+      : el('p.mini.sub', { style: 'margin-top:8px',
+          text: direto
+            ? 'Toque no botão abaixo para instalar.'
+            : 'No menu do navegador (⋮), escolha “Instalar aplicativo” ou “Adicionar à tela inicial”.' });
+
+    return el('div.cartao', { style: 'margin-top:16px;border-left:3px solid var(--sazonal)' }, [
+      el('div.versalete.fraco', { text: 'Usar como aplicativo' }),
+      el('div', { style: 'font-family:var(--serif);font-size:16px;margin-top:6px',
+        text: 'Fica com ícone próprio, abre em tela cheia e funciona sem internet.' }),
+      passos,
+      el('div.linha-btn', { style: 'margin-top:12px' }, [
+        direto ? el('button.btn.btn--p.btn--principal', {
+          type: 'button', text: 'Instalar',
+          onclick: function () { App.instalar(); }
+        }) : null,
+        el('button.btn.btn--p.btn--fantasma', {
+          type: 'button', text: 'Já instalei / não mostrar',
+          onclick: function () {
+            store.commit(function (s) { s.ajustes.instalacaoDispensada = true; });
+            App.render();
+          }
+        })
+      ].filter(Boolean))
+    ]);
+  }
+
   /* Aviso de rotina atualizada: aplica sem apagar o que já foi feito. */
   function atualizacaoDaRotina(store) {
     var novidade = store.rotinaDesatualizada();
@@ -337,7 +385,8 @@
 
       var avisos = motor.analisarDia(dia).slice(0, 2);
 
-      var filhos = [cabecalho(store, motor), atualizacaoDaRotina(store), agora(motor)];
+      var filhos = [cabecalho(store, motor), convitePraInstalar(store),
+                    atualizacaoDaRotina(store), agora(motor)];
       if (avisos.length) {
         filhos.push(el('div.pilha', { style: 'margin-top:14px' }, avisos.map(ui.avisoCartao)));
       }

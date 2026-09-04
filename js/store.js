@@ -55,6 +55,7 @@
         lema: '',
         prioridades: [],
         quadroId: '',
+        instalacaoDispensada: false,
         secoes: { estudos: true, autocuidado: true, espiritual: true, objetivos: true }
       },
       alternativas: [],   /* saídas para os dias que não saem como o planejado */
@@ -104,6 +105,7 @@
     base.ajustes.lema = base.ajustes.lema || '';
     base.ajustes.estilo = ['missal', 'limonada'].indexOf(base.ajustes.estilo) !== -1
       ? base.ajustes.estilo : 'missal';
+    base.ajustes.instalacaoDispensada = !!base.ajustes.instalacaoDispensada;
     /* Quem já tinha o quadro carregado antes deste controle existir está em dia:
        o aviso só aparece para mudanças daqui em diante. */
     base.ajustes.rotinaVersao = d.ajustes && d.ajustes.rotinaVersao !== undefined

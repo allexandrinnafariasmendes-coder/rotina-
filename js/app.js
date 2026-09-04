@@ -58,6 +58,34 @@
     });
   }
 
+  /* Já está aberto como aplicativo (tela de início) ou ainda no navegador? */
+  function jaInstalado() {
+    return window.navigator.standalone === true
+      || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+  }
+
+  function ehIOS() {
+    var ua = navigator.userAgent || '';
+    return /iPad|iPhone|iPod/.test(ua)
+      || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  }
+
+  /* No Android o navegador oferece a instalação; guardamos o convite para
+     usar num botão nosso, na hora certa. */
+  var convite = null;
+  window.addEventListener('beforeinstallprompt', function (ev) {
+    ev.preventDefault();
+    convite = ev;
+    render();
+  });
+
+  function instalar() {
+    if (!convite) return false;
+    convite.prompt();
+    convite.userChoice.then(function () { convite = null; render(); });
+    return true;
+  }
+
   function temaEscuro() {
     var t = store.estado.ajustes.tema || 'auto';
     if (t === 'escuro') return true;
@@ -151,6 +179,10 @@
   }
 
   App.render = render;
+  App.jaInstalado = jaInstalado;
+  App.ehIOS = ehIOS;
+  App.podeInstalarDireto = function () { return !!convite; };
+  App.instalar = instalar;
   App.aplicarTema = aplicarTema;
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar);
