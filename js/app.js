@@ -5,6 +5,8 @@
   var App = window.App;
   var store = App.store;
 
+  var VERSAO_APP = '11';
+
   var ROTAS = ['hoje', 'agenda', 'tarefas', 'estudos', 'mais', 'objetivos', 'habitos',
                'autocuidado', 'espiritual', 'semana', 'assistente', 'ajustes'];
   var ABAS = ['hoje', 'agenda', 'tarefas', 'estudos', 'assistente', 'mais'];
@@ -174,10 +176,28 @@
     render();
 
     if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
-      navigator.serviceWorker.register('sw.js').catch(function () { /* segue sem cache */ });
+      /* Se já havia uma versão no comando, a troca de versão recarrega a tela
+         sozinha — assim o app nunca fica preso numa versão antiga. */
+      var tinhaControlador = !!navigator.serviceWorker.controller;
+      var recarregando = false;
+
+      navigator.serviceWorker.addEventListener('controllerchange', function () {
+        if (!tinhaControlador || recarregando) return;
+        recarregando = true;
+        location.reload();
+      });
+
+      navigator.serviceWorker.register('sw.js').then(function (registro) {
+        registro.update();
+        /* procura versão nova toda vez que o app volta para a frente */
+        document.addEventListener('visibilitychange', function () {
+          if (!document.hidden) registro.update();
+        });
+      }).catch(function () { /* segue sem cache */ });
     }
   }
 
+  App.versao = VERSAO_APP;
   App.render = render;
   App.jaInstalado = jaInstalado;
   App.ehIOS = ehIOS;

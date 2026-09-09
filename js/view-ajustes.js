@@ -357,6 +357,8 @@
             e.rituais.length + ' rituais · ' + e.tarefas.length + ' tarefas · ' +
             e.objetivos.length + ' objetivos · ' + e.disciplinas.length + ' disciplinas · ' +
             Object.keys(e.registro).length + ' dias registrados' }),
+          el('p.mini.fraco', { text: 'Versão do app: ' + App.versao
+            + ' · rotina: "' + store.nomeDoQuadro() + '", versão ' + (a.rotinaVersao || 0) }),
           el('p.mini.fraco', { style: 'font-style:italic',
             text: 'Organizar a vida para vivê-la melhor — não viver para cumprir a organização.' })
         ])

@@ -1,5 +1,10 @@
-/* Cache simples para o app abrir sem internet. */
-var CACHE = 'minha-rotina-v10';
+/* Cache do app.
+
+   Estratégia: rede primeiro, cache depois. Com internet, o app sempre abre
+   na versão mais recente; sem internet, abre a última que foi guardada.
+   O contrário — cache primeiro — deixava o celular preso numa versão
+   antiga até o cache ser trocado. */
+var CACHE = 'minha-rotina-v11';
 var ARQUIVOS = [
   './',
   './index.html',
@@ -43,14 +48,25 @@ self.addEventListener('activate', function (e) {
 });
 
 self.addEventListener('fetch', function (e) {
-  if (e.request.method !== 'GET') return;
+  var req = e.request;
+  if (req.method !== 'GET') return;
+
+  var url;
+  try { url = new URL(req.url); } catch (erro) { return; }
+  if (url.origin !== self.location.origin) return;
+
   e.respondWith(
-    caches.match(e.request).then(function (hit) {
-      return hit || fetch(e.request).then(function (resp) {
+    fetch(req).then(function (resp) {
+      /* guarda a versão nova para quando faltar internet */
+      if (resp && resp.status === 200 && resp.type === 'basic') {
         var copia = resp.clone();
-        caches.open(CACHE).then(function (c) { c.put(e.request, copia); });
-        return resp;
-      }).catch(function () { return caches.match('./index.html'); });
+        caches.open(CACHE).then(function (c) { c.put(req, copia); });
+      }
+      return resp;
+    }).catch(function () {
+      return caches.match(req).then(function (hit) {
+        return hit || caches.match('./index.html');
+      });
     })
   );
 });
