@@ -4,7 +4,12 @@ Aplicativo pessoal de organização, planejamento e desenvolvimento. Mobile-firs
 
 **Stack:** React 18 · TypeScript · Tailwind CSS · Supabase (Auth, PostgreSQL com RLS, Storage) · TanStack Query · vite-plugin-pwa.
 
-## Etapa 1 — Fundação (esta versão)
+## No ar
+- App: <https://minha-rotina-alexandrina.netlify.app>
+- Supabase: projeto `minha-rotina` (`pgbktngzqnroixtlknyl`, São Paulo), com migrações aplicadas, Edge Function `send-reminders` e cron a cada minuto
+- Chaves VAPID e segredo do cron ficam no **Supabase Vault**, não no repositório
+
+## Etapa 1 — Fundação
 
 - Login, cadastro, recuperação e redefinição de senha (Supabase Auth)
 - Banco com **RLS em todas as tabelas** e chaves compostas que impedem vincular dados de outra pessoa
