@@ -1,0 +1,38 @@
+@import '@fontsource/cormorant-garamond/500.css';
+@import '@fontsource/cormorant-garamond/600.css';
+@import '@fontsource-variable/manrope';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
+  body {
+    @apply bg-cream font-sans text-ink antialiased;
+    overscroll-behavior-y: none;
+  }
+  h1, h2, h3 { @apply font-serif text-ink; letter-spacing: 0.005em; }
+  /* iOS amplia campos com fonte < 16px — evitamos isso */
+  input, select, textarea { font-size: 16px; }
+  :focus-visible { @apply outline-none ring-2 ring-rose-500 ring-offset-2 ring-offset-cream; }
+  ::selection { @apply bg-rose-200; }
+}
+
+@layer components {
+  .card { @apply rounded-2xl border border-sand-200/70 bg-white/80 p-4 shadow-soft; }
+  .field-label { @apply mb-1.5 block text-sm font-medium text-ink-muted; }
+  .input {
+    @apply block w-full rounded-xl border border-sand-200 bg-white px-3.5 py-2.5 text-ink
+           placeholder:text-ink-soft transition-colors focus:border-rose-300 focus:outline-none
+           focus:ring-2 focus:ring-rose-100;
+  }
+  .chip { @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium; }
+  .pt-safe { padding-top: max(env(safe-area-inset-top), 0.75rem); }
+  .pb-safe { padding-bottom: max(env(safe-area-inset-bottom), 0.5rem); }
+  .pb-nav { padding-bottom: calc(env(safe-area-inset-bottom) + 6.5rem); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; transition-duration: 1ms !important; }
+}
