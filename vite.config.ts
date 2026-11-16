@@ -3,7 +3,10 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import path from 'node:path';
 
+const base = process.env.VITE_BASE || '/';
+
 export default defineConfig({
+  base,
   resolve: { alias: { '@': path.resolve(__dirname, 'src') } },
   plugins: [
     react(),
@@ -19,8 +22,8 @@ export default defineConfig({
         short_name: 'Minha Rotina',
         description: 'Organização, planejamento e desenvolvimento pessoal',
         lang: 'pt-BR',
-        start_url: '/',
-        scope: '/',
+        start_url: base,
+        scope: base,
         display: 'standalone',
         orientation: 'portrait',
         background_color: '#FFFDF9',

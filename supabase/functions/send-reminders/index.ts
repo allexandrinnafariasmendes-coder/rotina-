@@ -4,8 +4,10 @@
 // - Modo teste: chamada autenticada do app com { "test": true }.
 //   Envia uma notificação de teste só para os aparelhos da própria usuária.
 //
-// Segredos necessários (supabase secrets set ...):
-//   VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT (ex.: mailto:voce@exemplo.com), CRON_SECRET
+// Configuração: lida do Supabase Vault pela função public.get_push_config()
+// (push_vapid_public, push_vapid_private, push_vapid_subject, reminders_cron_secret).
+// Variáveis de ambiente com os mesmos papéis (VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY,
+// VAPID_SUBJECT, CRON_SECRET) têm prioridade, se existirem.
 // SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY já existem em toda Edge Function.
 
 import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2';
@@ -23,8 +25,23 @@ const env = (k: string) => {
   return v;
 };
 
-webpush.setVapidDetails(env('VAPID_SUBJECT'), env('VAPID_PUBLIC_KEY'), env('VAPID_PRIVATE_KEY'));
 const admin = createClient(env('SUPABASE_URL'), env('SUPABASE_SERVICE_ROLE_KEY'), { auth: { persistSession: false } });
+
+let config: { cronSecret: string } | null = null;
+async function loadConfig() {
+  if (config) return config;
+  const { data, error } = await admin.rpc('get_push_config');
+  if (error) throw error;
+  const vault = (data ?? {}) as Record<string, string>;
+  const pick = (envName: string, vaultName: string) => {
+    const v = Deno.env.get(envName) || vault[vaultName];
+    if (!v) throw new Error(`Configuração ${vaultName} ausente`);
+    return v;
+  };
+  webpush.setVapidDetails(pick('VAPID_SUBJECT', 'push_vapid_subject'), pick('VAPID_PUBLIC_KEY', 'push_vapid_public'), pick('VAPID_PRIVATE_KEY', 'push_vapid_private'));
+  config = { cronSecret: pick('CRON_SECRET', 'reminders_cron_secret') };
+  return config;
+}
 
 interface Sub { id: string; endpoint: string; p256dh: string; auth: string }
 
@@ -121,8 +138,9 @@ async function runTest(req: Request) {
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
   try {
+    const cfg = await loadConfig();
     if (req.headers.get('x-cron-secret')) {
-      if (req.headers.get('x-cron-secret') !== env('CRON_SECRET')) return new Response('forbidden', { status: 403 });
+      if (req.headers.get('x-cron-secret') !== cfg.cronSecret) return new Response('forbidden', { status: 403 });
       return Response.json(await runScheduled());
     }
     const body = await req.json().catch(() => ({}));

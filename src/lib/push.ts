@@ -1,6 +1,14 @@
 import { supabase } from './supabase';
 
-export const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined;
+// Chave pública VAPID: variável de build ou, na falta dela, lida do banco (Vault).
+let VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined;
+
+export async function loadVapidKey(): Promise<string | undefined> {
+  if (VAPID_PUBLIC_KEY) return VAPID_PUBLIC_KEY;
+  const { data } = await supabase.rpc('get_vapid_public_key');
+  if (typeof data === 'string' && data) VAPID_PUBLIC_KEY = data;
+  return VAPID_PUBLIC_KEY;
+}
 
 export type PushSupport =
   | 'ok'
@@ -68,6 +76,7 @@ export async function disablePushOnThisDevice() {
 
 /** Ao abrir o app, garante que a inscrição atual está salva (o navegador pode renová-la). */
 export async function syncSubscription() {
+  await loadVapidKey();
   if (pushSupport() !== 'ok' || Notification.permission !== 'granted') return;
   const sub = await currentSubscription();
   if (sub) await saveSubscription(sub).catch(() => undefined);

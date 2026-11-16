@@ -8,7 +8,7 @@
 -- =====================================================================
 
 create extension if not exists pg_cron;
-create extension if not exists pg_net;
+create extension if not exists pg_net with schema extensions;
 
 select vault.create_secret('https://<PROJECT_REF>.supabase.co/functions/v1/send-reminders', 'reminders_url');
 select vault.create_secret('<CRON_SECRET>', 'reminders_cron_secret');

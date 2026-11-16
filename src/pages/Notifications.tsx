@@ -9,7 +9,7 @@ import { ErrorText, Field, Input, Toggle } from '@/components/ui/Field';
 import { Spinner, useToast } from '@/components/ui/misc';
 import { useUserId } from '@/hooks/useAuth';
 import { friendlyError, supabase } from '@/lib/supabase';
-import { currentSubscription, disablePushOnThisDevice, enablePush, pushSupport, sendTestNotification } from '@/lib/push';
+import { currentSubscription, disablePushOnThisDevice, enablePush, loadVapidKey, pushSupport, sendTestNotification, type PushSupport } from '@/lib/push';
 
 interface Settings {
   enabled: boolean;
@@ -59,7 +59,7 @@ export default function NotificationsPage() {
   const log = useLog();
   const qc = useQueryClient();
   const toast = useToast();
-  const support = pushSupport();
+  const [support, setSupport] = useState<PushSupport | null>(null);
   const [form, setForm] = useState<Settings>(DEFAULTS);
   const [subscribed, setSubscribed] = useState<boolean | null>(null);
   const [permission, setPermission] = useState<NotificationPermission | 'n/a'>(() => ('Notification' in window ? Notification.permission : 'n/a'));
@@ -74,7 +74,10 @@ export default function NotificationsPage() {
   }, [settings.data]);
 
   useEffect(() => {
-    currentSubscription().then((s) => setSubscribed(!!s)).catch(() => setSubscribed(false));
+    loadVapidKey().finally(() => {
+      setSupport(pushSupport());
+      currentSubscription().then((s) => setSubscribed(!!s)).catch(() => setSubscribed(false));
+    });
   }, []);
 
   const save = useMutation({
@@ -131,7 +134,7 @@ export default function NotificationsPage() {
 
         <section className="card" aria-label="Este aparelho">
           <h2 className="mb-2 text-xl font-semibold">Este aparelho</h2>
-          {support === 'ios-not-installed' ? (
+          {support === null ? <Spinner /> : support === 'ios-not-installed' ? (
             <div className="text-sm text-ink-muted">
               <p className="mb-3">No iPhone, as notificações só funcionam com o app instalado na Tela de Início (iOS 16.4 ou mais recente).</p>
               <ol className="space-y-2">

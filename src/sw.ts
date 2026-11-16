@@ -11,7 +11,7 @@ self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
 cleanupOutdatedCaches();
 precacheAndRoute(self.__WB_MANIFEST);
 // Navegação offline abre o app; dados sempre vêm do Supabase (nunca do cache).
-registerRoute(new NavigationRoute(createHandlerBoundToURL('/index.html'), { denylist: [/^\/auth\//] }));
+registerRoute(new NavigationRoute(createHandlerBoundToURL(`${import.meta.env.BASE_URL}index.html`), { denylist: [/^\/auth\//] }));
 
 interface PushPayload { title?: string; body?: string; url?: string; tag?: string }
 
@@ -21,8 +21,8 @@ self.addEventListener('push', (event) => {
   event.waitUntil(
     self.registration.showNotification(data.title || 'Minha Rotina', {
       body: data.body ?? '',
-      icon: '/pwa-192.png',
-      badge: '/pwa-192.png',
+      icon: new URL('pwa-192.png', self.registration.scope).href,
+      badge: new URL('pwa-192.png', self.registration.scope).href,
       tag: data.tag,
       data: { url: data.url || '/' },
     }),
@@ -31,11 +31,13 @@ self.addEventListener('push', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const url = new URL((event.notification.data?.url as string) || '/', self.location.origin).href;
+  // URLs do aviso são relativas ao app (ex.: '/agenda'); resolvidas dentro do escopo do service worker
+  const path = ((event.notification.data?.url as string) || '/').replace(/^\//, '');
+  const url = new URL(path, self.registration.scope).href;
   event.waitUntil((async () => {
     const all = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
     for (const c of all) {
-      if (new URL(c.url).origin === self.location.origin) {
+      if (c.url.startsWith(self.registration.scope)) {
         await (c as WindowClient).focus();
         if ('navigate' in c) await (c as WindowClient).navigate(url).catch(() => undefined);
         return;

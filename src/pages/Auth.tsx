@@ -5,11 +5,14 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/Button';
 import { ErrorText, Field, Input } from '@/components/ui/Field';
 
+/** Endereço absoluto do app (respeita o caminho base, ex.: GitHub Pages). */
+const appUrl = (path = '') => `${window.location.origin}${import.meta.env.BASE_URL}${path}`;
+
 function AuthShell({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) {
   return (
     <main className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center px-6 pt-safe pb-safe">
       <div className="mb-8 text-center animate-fade-up">
-        <img src="/favicon.svg" alt="" className="mx-auto mb-4 h-14 w-14" />
+        <img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" className="mx-auto mb-4 h-14 w-14" />
         <p className="font-serif text-lg italic text-rose-600">Minha Rotina</p>
         <h1 className="mt-1 text-4xl font-semibold">{title}</h1>
         <p className="mt-2 text-sm text-ink-muted">{subtitle}</p>
@@ -68,7 +71,7 @@ export function SignupPage() {
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
-      options: { data: { full_name: name.trim() }, emailRedirectTo: window.location.origin },
+      options: { data: { full_name: name.trim() }, emailRedirectTo: appUrl() },
     });
     setLoading(false);
     if (error) return setError(friendlyError(error));
@@ -108,7 +111,7 @@ export function ForgotPasswordPage() {
     e.preventDefault();
     setError('');
     setLoading(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/redefinir-senha` });
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: appUrl('redefinir-senha') });
     setLoading(false);
     if (error) setError(friendlyError(error));
     else setSent(true);
