@@ -1,12 +1,13 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { NavLink, Outlet, Link } from 'react-router-dom';
 import clsx from 'clsx';
 import {
   Home, CalendarDays, BookOpen, Sparkles, UserRound, Menu, ListTodo, Repeat2, LayoutGrid, Download,
-  Briefcase, Flower2, Dumbbell, Wallet, House, Plane, Heart, Target,
+  Bell, Briefcase, Flower2, Dumbbell, Wallet, House, Plane, Heart, Target,
 } from 'lucide-react';
 import { Sheet } from './ui/Sheet';
 import { IconButton } from './ui/Button';
+import { syncSubscription } from '@/lib/push';
 
 const MenuCtx = createContext<() => void>(() => {});
 
@@ -21,6 +22,7 @@ const NAV = [
 const AVAILABLE = [
   { to: '/tarefas', label: 'Tarefas', icon: ListTodo },
   { to: '/habitos', label: 'Hábitos', icon: Repeat2 },
+  { to: '/notificacoes', label: 'Notificações', icon: Bell },
   { to: '/?personalizar=1', label: 'Personalizar painel', icon: LayoutGrid },
   { to: '/importar-rotina', label: 'Importar rotina inicial', icon: Download },
 ];
@@ -38,6 +40,7 @@ const UPCOMING = [
 
 export function AppLayout() {
   const [menuOpen, setMenuOpen] = useState(false);
+  useEffect(() => { syncSubscription().catch(() => undefined); }, []);
   return (
     <MenuCtx.Provider value={() => setMenuOpen(true)}>
       <a href="#conteudo" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-lg focus:bg-white focus:px-3 focus:py-2">

@@ -16,6 +16,13 @@ Aplicativo pessoal de organização, planejamento e desenvolvimento. Mobile-firs
 - **Importar rotina inicial** (opcional, com revisão e confirmação). Horários que não constam no planejamento ficam em branco.
 - **Exportar meus dados** (backup completo em JSON)
 
+## Etapa 2 — Notificações
+- Web Push com o app fechado (no iPhone: app instalado na Tela de Início, iOS 16.4+)
+- Lembretes de compromissos conforme o “Lembrete” de cada um. Concluídos ou pulados não avisam.
+- Resumo do dia no horário escolhido (só quando há algo); silêncio noturno; pausa geral
+- Botão de teste, lista de avisos recentes e várias assinaturas (iPhone, computador…)
+- Envio no servidor (Edge Function + `pg_cron`), no fuso da usuária e sem duplicatas
+
 As demais áreas (projetos, autocuidado, atividades físicas, finanças, casa, viagens, família, metas e “Meu ano”) aparecem no menu como próximas etapas, sem botões inativos.
 
 ## Como rodar
@@ -37,14 +44,30 @@ npm run dev
 ### 3. Publicar (Vercel)
 Importe o repositório na Vercel, cadastre `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` em *Environment Variables* e faça o deploy. O `vercel.json` já cuida das rotas.
 
-### 4. Instalar no iPhone
+### 4. Notificações push (Etapa 2)
+1. Gere as chaves VAPID **uma vez**: `npx web-push generate-vapid-keys`. Guarde a privada só no Supabase.
+2. Rode a migração `supabase/migrations/20261116100000_etapa2_notificacoes.sql` no SQL Editor (ou `supabase db push`).
+3. Configure os segredos e publique a função (Supabase CLI):
+   ```bash
+   supabase secrets set VAPID_PUBLIC_KEY=... VAPID_PRIVATE_KEY=... \
+     VAPID_SUBJECT=mailto:seu-email@exemplo.com CRON_SECRET=$(openssl rand -hex 24)
+   supabase functions deploy send-reminders
+   ```
+   (`supabase/config.toml` já desliga a verificação de JWT automática; a função faz a própria checagem.)
+4. Abra `supabase/cron/agendar-lembretes.sql`, troque `<PROJECT_REF>` e `<CRON_SECRET>` e execute no SQL Editor. Isso faz a função rodar a cada minuto.
+5. Na Vercel, adicione `VITE_VAPID_PUBLIC_KEY` (a chave **pública**) e faça um novo deploy.
+6. No iPhone, abra o app **pela Tela de Início**, vá em Menu → Notificações → **Ativar notificações** e depois **Enviar teste**.
+
+Para conferir se o cron está rodando: `select * from cron.job_run_details order by start_time desc limit 10;`
+
+### 5. Instalar no iPhone
 Abra o site no **Safari**, toque em **Compartilhar** e depois em **Adicionar à Tela de Início**.
 
 ## Scripts
 | Comando | O que faz |
 |---|---|
 | `npm run dev` | servidor local |
-| `npm test` | testes de agenda (recorrência, conflitos, horários livres) |
+| `npm test` | testes de agenda (recorrência, conflitos, horários livres) e de lembretes (fuso, silêncio, janela) |
 | `npm run build` | checagem de tipos + build de produção com PWA |
 
 Decisões técnicas: [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md).

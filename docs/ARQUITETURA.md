@@ -36,6 +36,19 @@ supabase/migrations/   SQL versionado
 na hora (`src/lib/schedule.ts`, com testes), e só as exceções (concluído/pulado) são gravadas.
 Assim, editar a série é uma única atualização e não há milhares de linhas futuras para manter.
 
+## Notificações (Etapa 2)
+```
+pg_cron (1/min) ──HTTP + x-cron-secret──▶ Edge Function send-reminders ──Web Push (VAPID)──▶ Apple/Google ──▶ service worker ──▶ aviso
+```
+- `supabase/functions/_shared/reminders.ts`: cálculo **puro** (sem dependências), testado no app com Vitest e usado pela função em Deno.
+  Converte o horário com `Intl` no fuso salvo em `notification_settings.timezone`.
+- **Janela de recuperação:** um aviso vale se o seu horário caiu nos últimos 10 min. Assim, uma execução atrasada não perde lembretes e uma muito atrasada não manda aviso velho.
+- **Sem duplicatas:** antes de enviar, a função “reserva” a linha em `notification_log` (chave única `user_id, kind, ref_id, ref_date`, `ON CONFLICT DO NOTHING`).
+- Inscrições que o serviço de push responde com 404/410 são apagadas. Ao sair da conta, o aparelho é desinscrito.
+- **Silêncio noturno descarta** (não adia) os avisos do intervalo, para não acumular uma enxurrada às 5h.
+- **Service worker** próprio (`src/sw.ts`, estratégia `injectManifest`): cache do app + eventos `push` e `notificationclick`, que abre a tela certa.
+- **Segredos:** a chave VAPID privada e o `CRON_SECRET` ficam nos *secrets* do Supabase e no Vault; o app recebe só a chave pública.
+
 ## Princípios de produto aplicados
 - Sugestões nunca alteram nem excluem dados sozinhas. Exclusões pedem confirmação em dois toques.
 - Horários livres reservam 10 min antes e depois de cada compromisso e ignoram janelas menores que 30 min.
@@ -44,7 +57,7 @@ Assim, editar a série é uma única atualização e não há milhares de linhas
   contraste AA para textos (tons 700 da paleta), campos com 16 px para evitar zoom no iOS, safe areas do iPhone.
 
 ## Próximas etapas sugeridas
-2. Agenda completa: visão mensal, “Reorganizar meu dia” (proposta + confirmação), notificações (Web Push no iOS 16.4+ com o app instalado)
+2. ✅ Notificações · Agenda completa: visão mensal, “Reorganizar meu dia” (proposta + confirmação)
 3. Estudos: disciplinas, provas, notas, ENEM (simulados, redação), inglês
 4. Espiritualidade: diário, intenções, exame de consciência, confissões, calendário litúrgico
 5. Projetos (lista, calendário, Kanban), autocuidado, atividade física

@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Camera, Download, LogOut, UserRound, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Bell, Camera, ChevronRight, Download, LogOut, UserRound, X } from 'lucide-react';
+import { disablePushOnThisDevice } from '@/lib/push';
 import { PageHeader } from '@/components/Layout';
 import { Button } from '@/components/ui/Button';
 import { ErrorText, Field, Input, Textarea } from '@/components/ui/Field';
@@ -199,12 +201,17 @@ export default function ProfilePage() {
           <Button type="submit" className="mb-6 w-full" loading={save.isPending}>Salvar perfil</Button>
         </form>
 
+        <Link to="/notificacoes" className="card mb-3 flex min-h-[56px] items-center gap-3">
+          <Bell size={20} strokeWidth={1.5} className="text-rose-500" aria-hidden />
+          <span className="flex-1"><span className="block font-serif text-xl font-semibold">Notificações</span><span className="text-sm text-ink-muted">Lembretes, resumo do dia e silêncio noturno</span></span>
+          <ChevronRight size={18} className="text-ink-soft" aria-hidden />
+        </Link>
         <section className="card mb-3">
           <h2 className="mb-1 text-xl font-semibold">Seus dados</h2>
           <p className="mb-3 text-sm text-ink-muted">Baixe uma cópia completa de tudo o que você registrou (backup em JSON).</p>
           <Button variant="soft" className="w-full" onClick={doExport} loading={exporting}><Download size={16} aria-hidden />Exportar meus dados</Button>
         </section>
-        <Button variant="ghost" className="mb-4 w-full" onClick={() => supabase.auth.signOut().then(() => qc.clear())}><LogOut size={16} aria-hidden />Sair da conta</Button>
+        <Button variant="ghost" className="mb-4 w-full" onClick={async () => { await disablePushOnThisDevice().catch(() => undefined); await supabase.auth.signOut(); qc.clear(); }}><LogOut size={16} aria-hidden />Sair da conta</Button>
       </div>
     </>
   );

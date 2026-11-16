@@ -190,7 +190,7 @@ export const useStudyMutations = () => useCrud<StudySessionRow>('study_sessions'
 
 // ------------------------------------------------------- Exportar meus dados
 export async function exportAllData() {
-  const tables = ['profiles', 'categories', 'events', 'event_occurrences', 'tasks', 'habits', 'habit_logs', 'quick_notes', 'reflections', 'study_sessions'];
+  const tables = ['profiles', 'categories', 'events', 'event_occurrences', 'tasks', 'habits', 'habit_logs', 'quick_notes', 'reflections', 'study_sessions', 'notification_settings'];
   const out: Record<string, unknown> = { app: 'Minha Rotina', exported_at: new Date().toISOString(), version: 1 };
   for (const t of tables) out[t] = await run(supabase.from(t).select('*'));
   return out;

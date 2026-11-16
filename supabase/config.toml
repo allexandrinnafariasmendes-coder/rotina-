@@ -1,0 +1,4 @@
+# Configuração usada pela Supabase CLI (supabase functions deploy)
+[functions.send-reminders]
+# A função faz a própria autenticação: segredo do cron ou sessão da usuária (modo teste)
+verify_jwt = false

@@ -171,7 +171,7 @@ export function EventSheet({ open, onClose, event, defaultDate }: {
         </fieldset>
 
         <Toggle label="Compromisso fixo" description="Fixos nunca são movidos pelas sugestões de reorganização." checked={fixed} onChange={setFixed} />
-        <Field label="Lembrete">{(id) => (
+        <Field label="Lembrete" hint="Chega como notificação no celular quando as notificações estão ativadas (Menu → Notificações).">{(id) => (
           <Select id={id} value={reminder} onChange={(e) => setReminder(e.target.value)}>
             <option value="">Sem lembrete</option>
             <option value="0">Na hora</option>

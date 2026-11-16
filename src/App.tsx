@@ -14,6 +14,7 @@ const ProfilePage = lazy(() => import('@/pages/Profile'));
 const TasksPage = lazy(() => import('@/pages/Tasks'));
 const HabitsPage = lazy(() => import('@/pages/Habits'));
 const ImportRoutinePage = lazy(() => import('@/pages/ImportRoutine'));
+const NotificationsPage = lazy(() => import('@/pages/Notifications'));
 
 function RequireAuth({ children }: { children: ReactNode }) {
   const { session, loading } = useAuth();
@@ -54,6 +55,7 @@ export default function App() {
           <Route path="tarefas" element={<TasksPage />} />
           <Route path="habitos" element={<HabitsPage />} />
           <Route path="importar-rotina" element={<ImportRoutinePage />} />
+          <Route path="notificacoes" element={<NotificationsPage />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
