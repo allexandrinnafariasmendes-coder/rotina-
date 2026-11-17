@@ -5,7 +5,7 @@ Aplicativo pessoal de organização, planejamento e desenvolvimento. Mobile-firs
 **Stack:** React 18 · TypeScript · Tailwind CSS · Supabase (Auth, PostgreSQL com RLS, Storage) · TanStack Query · vite-plugin-pwa.
 
 ## No ar
-- App: <https://minha-rotina-alexandrina.netlify.app>
+- App: <https://allexandrinnafariasmendes-coder.github.io/minha-rotina-app/> (build publicado no repositório `minha-rotina-app`; gere com `npm run build:pages` e copie `dist/` para lá)
 - Supabase: projeto `minha-rotina` (`pgbktngzqnroixtlknyl`, São Paulo), com migrações aplicadas, Edge Function `send-reminders` e cron a cada minuto
 - Chaves VAPID e segredo do cron ficam no **Supabase Vault**, não no repositório
 
